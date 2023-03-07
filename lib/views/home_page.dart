@@ -4,6 +4,7 @@ import 'package:http/http.dart';
 import 'package:simple_bazaar/models/category.dart';
 import 'package:get/get.dart' hide Response;
 import '../models/dataFromGeoLocation.dart';
+import '../models/productByStoreId.dart';
 import '../models/store.dart';
 import '../routes/Routes.dart';
 import 'package:http/http.dart' as http;
@@ -16,7 +17,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  List<String> categories = ["Fruits", "Vegetables", "Dairy", "Chocolates"];
   int idx = 0;
   List<String> list = <String>[
     // 'Mahalaxmi Store',
@@ -42,6 +42,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   DataFromGeoLocation? dataFromGeoLocation;
+  ProductByStoreId? productByStoreId;
 
   solve() async {
     Response response = await post(
@@ -93,7 +94,10 @@ class _HomePageState extends State<HomePage> {
         list.add(i.name!);
       }
       if(list.isNotEmpty){
+        print("a");
         dropdownValue=list[0];
+        await getCategoriesApi2(dataFromGeoLocation!.stores![0].uid,5);
+        print("b");
         setState(() {
 
         });
@@ -101,6 +105,38 @@ class _HomePageState extends State<HomePage> {
       return true;
     }
     return false;
+  }
+
+
+
+  getCategoriesApi2(var storeId,var limit) async{
+    storeId=2;
+    print("c");
+    Response response = await post(
+        Uri.parse(
+            "https://simple.zapbase.com/public/api/v1/products/getByStoreId"),
+        body: {
+          "id": storeId.toString(),
+          "limit": limit.toString(),
+        });
+
+    print("d");
+    if(response.statusCode==200){
+      print("1e");
+      var body = jsonDecode(response.body.toString());
+      print("2e");
+      print(body["success"]);
+      productByStoreId = ProductByStoreId.fromJson(body["data"]);
+      print("3e");
+      print(productByStoreId);
+      print("4e");
+    }
+    else{
+      print("not successful");
+      print("f");
+    }
+    print("g");
+    return;
   }
 
   @override
@@ -548,70 +584,9 @@ class _HomePageState extends State<HomePage> {
                             crossAxisCount: 2,
                             crossAxisSpacing: 10,
                           ),
-                          itemCount: 10,
+                          itemCount: productByStoreId!.data!.length,
                           itemBuilder: (BuildContext context, int index) {
-                            return GridTile(
-                              child: Container(
-                                // margin: (index % 2 == 0)
-                                //     ? EdgeInsets.only(left: 20)
-                                //     : EdgeInsets.only(right: 20),
-                                child: Card(
-                                  color: Colors.transparent,
-                                  elevation: 0,
-                                  child: Container(
-                                    padding: EdgeInsets.only(left: 16, right: 11),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(17),
-                                      color: Color.fromRGBO(243, 245, 247, 1),
-                                    ),
-                                    child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        SizedBox(
-                                          child: Image.asset(
-                                              "assets/images/category0.png"),
-                                          height: width * 0.18,
-                                          width: width * 0.18,
-                                        ),
-                                        SizedBox(
-                                          height: 25,
-                                        ),
-                                        Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              "Bell Pepper Red",
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.w700,
-                                                  fontSize: 15),
-                                            ),
-                                            Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.spaceBetween,
-                                              children: [
-                                                Text("1kg, 4\$",
-                                                    style: TextStyle(
-                                                      fontWeight: FontWeight.w700,
-                                                      fontSize: 16,
-                                                      color: Color.fromRGBO(
-                                                          214, 31, 38, 1),
-                                                    )),
-                                                Icon(
-                                                  Icons.add_circle_rounded,
-                                                  color:
-                                                      Color.fromRGBO(214, 31, 38, 1),
-                                                )
-                                              ],
-                                            )
-                                          ],
-                                        )
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            );
+                            return buildProductItems(index,width);
                           }),
                     ),
                   ],
@@ -656,4 +631,71 @@ class _HomePageState extends State<HomePage> {
       ],
     );
   }
+
+
+  buildProductItems(int idx, var width){
+    return GridTile(
+      child: Container(
+        // margin: (index % 2 == 0)
+        //     ? EdgeInsets.only(left: 20)
+        //     : EdgeInsets.only(right: 20),
+        child: Card(
+          color: Colors.transparent,
+          elevation: 0,
+          child: Container(
+            padding: EdgeInsets.only(left: 16, right: 11),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(17),
+              color: Color.fromRGBO(243, 245, 247, 1),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(
+                  child: Image.asset(
+                      "assets/images/category0.png"),
+                  height: width * 0.18,
+                  width: width * 0.18,
+                ),
+                SizedBox(
+                  height: 25,
+                ),
+                Column(
+                  crossAxisAlignment:
+                  CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Bell Pepper Red",
+                      style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 15),
+                    ),
+                    Row(
+                      mainAxisAlignment:
+                      MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text("1kg, 4\$",
+                            style: TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 16,
+                              color: Color.fromRGBO(
+                                  214, 31, 38, 1),
+                            )),
+                        Icon(
+                          Icons.add_circle_rounded,
+                          color:
+                          Color.fromRGBO(214, 31, 38, 1),
+                        )
+                      ],
+                    )
+                  ],
+                )
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
 }
