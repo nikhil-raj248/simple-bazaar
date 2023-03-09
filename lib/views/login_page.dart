@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:email_validator/email_validator.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Response;
@@ -273,51 +274,59 @@ class _LoginPageState extends State<LoginPage> {
     var password=passwordController.text.toString();
 
     if(email.isNotEmpty && password.isNotEmpty){
-      try{
-        setState(() {
-          isLoggingIn=true;
-        });
-        Response response=await post(
-            Uri.parse("https://simple.zapbase.com/public/api/v1/auth/login"),
-            body: {
-              "email":email,
-              "password":password,
-            }
-        );
-        setState(() {
-          isLoggingIn=false;
-        });
-        if(response.statusCode==200){
-          var body=jsonDecode(response.body.toString());
-          print("SUCCESS");
-          //print(body["user"].runtimeType);
-          //showErrorDialog("SUCCESSFULLY LOGGED IN",false);
-          SharedPreferences pref =await SharedPreferences.getInstance();
-          //pref.setString("email", email);
+
+      if(EmailValidator.validate(email)){
+        try{
+          setState(() {
+            isLoggingIn=true;
+          });
+          Response response=await post(
+              Uri.parse("https://simple.zapbase.com/public/api/v1/auth/login"),
+              body: {
+                "email":email,
+                "password":password,
+              }
+          );
+          setState(() {
+            isLoggingIn=false;
+          });
+          if(response.statusCode==200){
+            var body=jsonDecode(response.body.toString());
+            print("SUCCESS");
+            //print(body["user"].runtimeType);
+            //showErrorDialog("SUCCESSFULLY LOGGED IN",false);
+            SharedPreferences pref =await SharedPreferences.getInstance();
+            //pref.setString("email", email);
 
 
-           String encodedMap = json.encode(body["user"]);
-          //print(encodedMap);
+            String encodedMap = json.encode(body["user"]);
+            //print(encodedMap);
 
-           pref.setString('hasUser', encodedMap);
+            pref.setString('hasUser', encodedMap);
 
 
-          Get.offAllNamed(PageRoutes.home_page);
-          //print(body);
+            Get.offAllNamed(PageRoutes.home_page);
+            //print(body);
+          }
+          else{
+            var body=jsonDecode(response.body.toString());
+            print("FAILED TO LOGIN");
+            showErrorDialog(body["error"].toString(),true);
+            //print(body["message"]);
+          }
         }
-        else{
-          var body=jsonDecode(response.body.toString());
-          print("FAILED TO LOGIN");
-          showErrorDialog(body["error"].toString(),true);
-          //print(body["message"]);
+        catch(e){
+          print(e.toString());
         }
       }
-      catch(e){
-        print(e.toString());
+      else{
+        showErrorDialog("Enter valid email",true);
       }
+
+
     }
     else{
-      showErrorDialog("Please enter all details",true);
+      showErrorDialog("Enter all details",true);
     }
   }
 

@@ -380,11 +380,10 @@ class _AccountPageState extends State<AccountPage> {
   }
   abcd()async{
     SharedPreferences pref = await SharedPreferences.getInstance();
-    print(pref.getString("email"));
   }
   logoutFunction()async{
     SharedPreferences pref = await SharedPreferences.getInstance();
-    pref.remove("email");
+    pref.remove("hasUser");
 
     Get.offAllNamed(PageRoutes.login_page);
   }
