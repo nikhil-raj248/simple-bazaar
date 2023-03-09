@@ -8,6 +8,7 @@ import 'package:simple_bazaar/views/splash_screen.dart';
 
 import '../views/account_page.dart';
 import '../views/explore_page.dart';
+import '../views/product_detail_page.dart';
 
 
 class PageRoutes{
@@ -18,6 +19,7 @@ class PageRoutes{
   static const String home_page = '/home';
   static const String explore_page = '/explore';
   static const String account_page = '/account';
+  static const String product_detail_page = '/productDetail';
 
   static Widget getSplashScreen () => SplashScreen();
   static Widget getOnboardingPage () => OnboardingPage();
@@ -26,6 +28,7 @@ class PageRoutes{
   static Widget getHomePage () => HomePage();
   static Widget getExplorePage () => ExplorePage();
   static Widget getAccountPage () => AccountPage();
+  static Widget getProductDetailPage () => ProductDetailPage();
 
   static List<GetPage<dynamic>> routes=[
     GetPage(
@@ -65,6 +68,12 @@ class PageRoutes{
     GetPage(
       name: account_page,
       page: getAccountPage,
+      transition: Transition.downToUp,
+      transitionDuration: Duration(milliseconds: 200),
+    ),
+    GetPage(
+      name: product_detail_page,
+      page: getProductDetailPage,
       transition: Transition.downToUp,
       transitionDuration: Duration(milliseconds: 200),
     ),

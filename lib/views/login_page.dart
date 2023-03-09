@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Response;
 import 'package:http/http.dart';
@@ -56,15 +57,17 @@ class _LoginPageState extends State<LoginPage> {
                         height: height*0.16,
                         child: Image.asset("assets/images/simplebazaartext.jpg")
                     ),
-                    SizedBox(height: 8,),
+                    SizedBox(height: 2,),
                     Container(
                       margin: EdgeInsets.only(left: 10,right: 10),
                       child: Text("Log in to your Account",
+                          textAlign: TextAlign.center,
                           style: TextStyle(fontWeight: FontWeight.w600, fontSize: 22)),
                     ),
                     Container(
                       margin: EdgeInsets.only(left: 10,right: 10),
-                      child: Text("Welcome back, please enter your details.",textAlign: TextAlign.center,
+                      child: Text("Welcome back, please enter your details.",
+                          textAlign: TextAlign.center,
                           style: TextStyle(
                               fontWeight: FontWeight.w500,
                               fontSize: 15,
@@ -75,28 +78,33 @@ class _LoginPageState extends State<LoginPage> {
                       margin: EdgeInsets.only(left: 20,right: 28),
                       child: Column(
                         children: [
-                          SizedBox(
-                            height: 56,
-                            child: ElevatedButton(
-                              onPressed: () {},
-                              style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.white,
-                                  elevation: 0,
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(5),
-                                      side: BorderSide(color: Color.fromRGBO(28, 52, 84, 0.26))
+                          ElevatedButton(
+                            onPressed: () {},
+                            style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.white,
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(5),
+                                    side: BorderSide(color: Color.fromRGBO(28, 52, 84, 0.26))
+                                )
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(18.0),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Image.asset("assets/images/googleLogo.png",height: 18,),
+                                  SizedBox(width: 15),
+                                  Flexible(
+                                    child: Text("Continue with Google",
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      color: Color.fromRGBO(27, 43, 65, 0.72),
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 16
+                                    ),),
                                   )
-                              ),
-                              child: SizedBox(
-                                height: 18,
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Image.asset("assets/images/googleLogo.png",),
-                                    SizedBox(width: 20),
-                                    Text("Continue with Google")
-                                  ],
-                                ),
+                                ],
                               ),
                             ),
                           ),
@@ -210,18 +218,37 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                     SizedBox(height: 22,),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text("Don't have an account? ",style: TextStyle(fontWeight: FontWeight.w400, fontSize: 13,color: Colors.black)),
-                        GestureDetector(
-                            onTap: (){
-                              Get.toNamed(PageRoutes.register_page);
-                              //Navigator.push(context, PageTransition(type: PageTransitionType.rightToLeft, child: RegisterPage()));
-                            },
-                            child: Text("Sign Up",style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13,color: Color.fromRGBO(214, 31, 38, 1))))
-                      ],
+                    RichText(
+                        text: TextSpan(
+                          children: <TextSpan>[
+                            TextSpan(
+                                text: "Don't have an account? ", style: TextStyle(fontWeight: FontWeight.w500, fontSize: 13,color: Colors.black)),
+                            TextSpan(
+                                text: "Sign Up",
+                                recognizer: new TapGestureRecognizer()..onTap = () {
+                                  Get.toNamed(PageRoutes.register_page)?.then((value){
+                                    FocusManager.instance.primaryFocus?.unfocus();
+                                  });
+                                },
+                                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13,color: Color.fromRGBO(214, 31, 38, 1))),
+                          ],
+                        )
                     ),
+                    // Row(
+                    //   mainAxisAlignment: MainAxisAlignment.center,
+                    //   children: [
+                    //     Text("Don't have an account? ",style: TextStyle(fontWeight: FontWeight.w500, fontSize: 13,color: Colors.black)),
+                    //     GestureDetector(
+                    //         onTap: (){
+                    //           Get.toNamed(PageRoutes.register_page)?.then((value){
+                    //             FocusManager.instance.primaryFocus?.unfocus();
+                    //           });
+                    //
+                    //           //Navigator.push(context, PageTransition(type: PageTransitionType.rightToLeft, child: RegisterPage()));
+                    //         },
+                    //         child: Text("Sign Up",style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13,color: Color.fromRGBO(214, 31, 38, 1))))
+                    //   ],
+                    // ),
                     SizedBox(height: 20,),
                   ],
                 ),
@@ -290,7 +317,7 @@ class _LoginPageState extends State<LoginPage> {
       }
     }
     else{
-      showErrorDialog("ENTER ALL DETAILS",true);
+      showErrorDialog("Please enter all details",true);
     }
   }
 

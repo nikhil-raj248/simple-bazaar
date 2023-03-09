@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:simple_bazaar/models/subCategory.dart';
@@ -59,11 +60,11 @@ class _ExplorePageState extends State<ExplorePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             GestureDetector(
-              onTap: (){
-                setState(() {
-                  idx=0;
-                });
-              },
+              // onTap: (){
+              //   setState(() {
+              //     idx=0;
+              //   });
+              // },
               child: Padding(
                 padding: const EdgeInsets.only(top: 13.0),
                 child: Column(
@@ -75,11 +76,11 @@ class _ExplorePageState extends State<ExplorePage> {
               ),
             ),
             GestureDetector(
-              onTap: (){
-                setState(() {
-                  idx=1;
-                });
-              },
+              // onTap: (){
+              //   setState(() {
+              //     idx=1;
+              //   });
+              // },
               child: Padding(
                 padding: const EdgeInsets.only(top: 13.0),
                 child: Column(
@@ -120,11 +121,11 @@ class _ExplorePageState extends State<ExplorePage> {
               ),
             ),
             GestureDetector(
-              onTap: (){
-                setState(() {
-                  idx=3;
-                });
-              },
+              // onTap: (){
+              //   setState(() {
+              //     idx=3;
+              //   });
+              // },
               child: Padding(
                 padding: const EdgeInsets.only(top: 13.0),
                 child: Column(
@@ -136,11 +137,11 @@ class _ExplorePageState extends State<ExplorePage> {
               ),
             ),
             GestureDetector(
-              onTap: (){
-                setState(() {
-                  idx=4;
-                });
-              },
+              // onTap: (){
+              //   setState(() {
+              //     idx=4;
+              //   });
+              // },
               child: Padding(
                 padding: const EdgeInsets.only(top: 13.0),
                 child: Column(
@@ -163,14 +164,14 @@ class _ExplorePageState extends State<ExplorePage> {
           },
         ),
         title:  Text(
-          (pageType=="category")?"Find Category":"Find Products",
+          (pageType=="SellAllCategory")?"Find Category":"Find Products",
           style: TextStyle(color: Colors.black, fontSize: 18,fontWeight: FontWeight.w700),
         ),
         backgroundColor: Colors.white,
         elevation: 0,),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.only(left: 25.0,right: 25),
+          padding: const EdgeInsets.only(left: 20.0,right: 20),
           child: SingleChildScrollView(
             physics: BouncingScrollPhysics(),
             child: Column(
@@ -200,43 +201,39 @@ class _ExplorePageState extends State<ExplorePage> {
                     gridDelegate:
                     const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 3,
+                      crossAxisSpacing: 10,
+                      mainAxisSpacing: 10
                     ),
                     itemCount: subCategoriesData.length,
                     itemBuilder: (BuildContext context, int index) {
-                      return GridTile(
-                        child: Container(
-                          // margin: (index % 2 == 0)
-                          //     ? EdgeInsets.only(left: 20)
-                          //     : EdgeInsets.only(right: 20),
-                          child: Card(
-                            color: Colors.transparent,
-                             elevation: 0,
-                            child: Container(
-                              padding: EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(17),
-                                border: Border.all(color:itemColors[index%7]["b"]),
-                                color: itemColors[index%7]["a"],
+                      return Container(
+                        padding: EdgeInsets.only(left: 5,right: 5,top: 3,bottom: 3),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(17),
+                          border: Border.all(color:itemColors[index%7]["b"]),
+                          color: itemColors[index%7]["a"],
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Flexible(
+                              child: CachedNetworkImage(
+                                key: UniqueKey(),
+                                imageUrl: "https://simple.zapbase.com/public/storage/images/"+subCategoriesData[index].cover!,
+                                placeholder: (context, url) => Center(child: CircularProgressIndicator(color: Color.fromRGBO(214, 31, 38, 1))),
+                                errorWidget: (context, url, error) => Icon(Icons.error,color: Color.fromRGBO(214, 31, 38, 1),),
                               ),
-                              child: Column(
-                                children: [
-                                  Expanded(
-                                      //child: (index%3!=0)?Image.asset("assets/images/fruits.png"):Image.asset("assets/images/cookingoil.png"),
-                                    child: Image.network("https://simple.zapbase.com/public/storage/images/"+subCategoriesData[index].cover!),
-                                    flex: 3,
-                                    // height: 20,
-                                    // width: 20,
-                                  ),
-                                  Expanded(child: SizedBox(height: 10,)),
-                                  Expanded(flex:2,
-                                      child: Text(subCategoriesData[index].name!,maxLines: 2,overflow: TextOverflow.ellipsis,textAlign: TextAlign.center,style: TextStyle(fontSize: 12,fontWeight: FontWeight.w700),),
-                                      //child: Text((index%3!=0)?"Cooking Oil\n& Ghee":"Fresh Fruits\nand Vegetables",textAlign: TextAlign.center,style: TextStyle(fontSize: 12,fontWeight: FontWeight.w700),)
-                                  ),
-                                ],
-                              ),
-                            )
-                          ),
+                              //height: 50,
+                              //width: 50,
 
+                            ),
+                            SizedBox(height: 8,),
+                            Text(subCategoriesData[index].name!,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(fontSize: 12,fontWeight: FontWeight.w700),),
+                          ],
                         ),
                       );
                     }),

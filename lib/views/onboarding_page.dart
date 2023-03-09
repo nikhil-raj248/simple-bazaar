@@ -71,15 +71,18 @@ class _OnboardingPageState extends State<OnboardingPage> {
                           SizedBox(
                             child: Image.asset(item['image_path']),
                             height: height*0.4,
-                            width: width,
+                            width: width*0.9,
                           ),
-                          SizedBox(height: height*0.09,),
-                          Text(
-                            item['title'],
-                            style: TextStyle(
-                                fontWeight: FontWeight.w700, fontSize: 25,color: Color.fromRGBO(26, 26, 26, 1)),
+                          SizedBox(height: height*0.08,),
+                          Container(
+                            child: Text(
+                              item['title'],
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w700, fontSize: 25,color: Color.fromRGBO(26, 26, 26, 1)),
+                              textAlign: TextAlign.center,
+                            ),
                           ),
-                          SizedBox(height: 10,),
+                          SizedBox(height: height*0.01,),
                           Container(
                             child: Text(item['subtitle'],
                                 textAlign: TextAlign.center,
@@ -94,7 +97,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                     }).toList(),
                     carouselController: carouselController,
                     options: CarouselOptions(
-                      height: height * 0.8,
+                      height: height * 0.75,
                       scrollPhysics: const BouncingScrollPhysics(),
                       //autoPlay: true,
                       //aspectRatio: 2,

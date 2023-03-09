@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:email_validator/email_validator.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -41,9 +43,9 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
-    var size = MediaQuery.of(context).size;
-    var width=size.width;
-    var height=size.height;
+    // var size = MediaQuery.of(context).size;
+    // var width=size.width;
+    // var height=size.height;
     return Scaffold(
         backgroundColor: Colors.white,
         body: SafeArea(
@@ -66,13 +68,14 @@ class _RegisterPageState extends State<RegisterPage> {
                     Container(
                       margin: EdgeInsets.only(left: 10,right: 10),
                       child: Text("Create an Account",
+                          textAlign: TextAlign.center,
                           style: TextStyle(fontWeight: FontWeight.w600, fontSize: 22)),
                     ),
                     Container(
                       margin: EdgeInsets.only(left: 10,right: 10),
-
                       child: Text("Sign up now to get started with an account",
-                          textAlign: TextAlign.center,style: TextStyle(
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
                               fontWeight: FontWeight.w500,
                               fontSize: 15,
                               color: Color.fromRGBO(134, 136, 137, 1))),
@@ -82,28 +85,33 @@ class _RegisterPageState extends State<RegisterPage> {
                       margin: EdgeInsets.only(left: 20,right: 28),
                       child: Column(
                         children: [
-                          SizedBox(
-                            height: 56,
-                            child: ElevatedButton(
-                              onPressed: () {},
-                              style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.white,
-                                  elevation: 0,
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(5),
-                                      side: BorderSide(color: Color.fromRGBO(28, 52, 84, 0.26))
+                          ElevatedButton(
+                            onPressed: () {},
+                            style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.white,
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(5),
+                                    side: BorderSide(color: Color.fromRGBO(28, 52, 84, 0.26))
+                                )
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(18.0),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Image.asset("assets/images/googleLogo.png",height: 18,),
+                                  SizedBox(width: 15),
+                                  Flexible(
+                                    child: Text("Sign up with Google",
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                          color: Color.fromRGBO(27, 43, 65, 0.72),
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 16
+                                      ),),
                                   )
-                              ),
-                              child: SizedBox(
-                                height: 18,
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Image.asset("assets/images/googleLogo.png",),
-                                    SizedBox(width: 20),
-                                    Text("Sign up with Google")
-                                  ],
-                                ),
+                                ],
                               ),
                             ),
                           ),
@@ -293,8 +301,21 @@ class _RegisterPageState extends State<RegisterPage> {
                                   isChecked = value!;
                                 });
                               }),
-                          Text("I have read and agree to the ",style: TextStyle(fontWeight: FontWeight.w400, fontSize: 12,color: Color.fromRGBO(27, 43, 65, 0.72))),
-                          Text("Terms of Service",style: TextStyle(decoration:TextDecoration.underline,fontWeight: FontWeight.w600, fontSize: 12,color: Color.fromRGBO(214, 31, 38, 1))),
+                          Flexible(
+                            child: RichText(
+                                text: TextSpan(
+                                  children: <TextSpan>[
+                                    TextSpan(
+                                        text: 'I have read and agree to the ', style: TextStyle(fontWeight: FontWeight.w400, fontSize: 12,color: Color.fromRGBO(27, 43, 65, 0.72))),
+                                    TextSpan(
+                                        text: 'Terms of Service',
+                                        style: TextStyle(decoration:TextDecoration.underline,fontWeight: FontWeight.w600, fontSize: 12,color: Color.fromRGBO(214, 31, 38, 1))),
+                                  ],
+                                )
+                            ),
+                          ),
+                          // Text("I have read and agree to the ",style: TextStyle(fontWeight: FontWeight.w400, fontSize: 12,color: Color.fromRGBO(27, 43, 65, 0.72))),
+                          // Text("Terms of Service",style: TextStyle(decoration:TextDecoration.underline,fontWeight: FontWeight.w600, fontSize: 12,color: Color.fromRGBO(214, 31, 38, 1))),
                         ],
                       ),
                     ),
@@ -314,18 +335,32 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                     ),
                     SizedBox(height: 20,),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text("Already have an account? ",style: TextStyle(fontWeight: FontWeight.w400, fontSize: 13,color: Colors.black)),
-                        GestureDetector(
-                            onTap: (){
-                              //Navigator.push(context, PageTransition(type: PageTransitionType.rightToLeft, child: LoginPage()));
-                              Get.offNamed(PageRoutes.login_page);
-                            },
-                            child: Text("Log in",style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13,color: Color.fromRGBO(214, 31, 38, 1))))
-                      ],
+                    RichText(
+                        text: TextSpan(
+                          children: <TextSpan>[
+                            TextSpan(
+                                text: 'Already have an account? ', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 13,color: Colors.black)),
+                            TextSpan(
+                                text: 'Log in',
+                                recognizer: new TapGestureRecognizer()..onTap = () {
+                                  Get.offNamed(PageRoutes.login_page);
+                                },
+                                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13,color: Color.fromRGBO(214, 31, 38, 1))),
+                          ],
+                        )
                     ),
+                    // Row(
+                    //   mainAxisAlignment: MainAxisAlignment.center,
+                    //   children: [
+                    //     Text("Already have an account? ",style: TextStyle(fontWeight: FontWeight.w400, fontSize: 13,color: Colors.black)),
+                    //     GestureDetector(
+                    //         onTap: (){
+                    //           //Navigator.push(context, PageTransition(type: PageTransitionType.rightToLeft, child: LoginPage()));
+                    //           Get.offNamed(PageRoutes.login_page);
+                    //         },
+                    //         child: Text("Log in",style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13,color: Color.fromRGBO(214, 31, 38, 1))))
+                    //   ],
+                    // ),
                     SizedBox(height: 40,),
                   ],
                 ),
@@ -363,66 +398,87 @@ class _RegisterPageState extends State<RegisterPage> {
 
       if(password==confirmPassword){
 
-        try{
-          setState(() {
-            isRegistering=true;
-          });
-          Response response=await post(
-              Uri.parse("https://simple.zapbase.com/public/api/v1/auth/create_account"),
-              body: {
-                "email":email,
-                "first_name":fName,
-                "last_name":lName,
-                "mobile":mobileNo,
-                "country_code":"91",
-                "password":password,
-                "cover":"assets/images/apple.png",
+        if(EmailValidator.validate(email)){
+
+          print("correct email");
+
+          if(mobileNo.length==10 && RegExp(r'^[0-9]*$').hasMatch(mobileNo)){
+            print("correct mobile");
+
+            try{
+              setState(() {
+                isRegistering=true;
+              });
+              Response response=await post(
+                  Uri.parse("https://simple.zapbase.com/public/api/v1/auth/create_account"),
+                  body: {
+                    "email":email,
+                    "first_name":fName,
+                    "last_name":lName,
+                    "mobile":mobileNo,
+                    "country_code":"91",
+                    "password":password,
+                    "cover":"assets/images/apple.png",
+                  }
+              );
+
+              setState(() {
+                isRegistering=false;
+              });
+
+              if(response.statusCode==200){
+                var body=jsonDecode(response.body.toString());
+                print("SUCCESS");
+                //showErrorDialog("SUCCESSFULLY REGISTERED",false);
+                SharedPreferences pref =await SharedPreferences.getInstance();
+                // pref.setString("email", email);
+
+                String encodedMap = json.encode(body["user"]);
+                //print(encodedMap);
+
+                pref.setString('hasUser', encodedMap);
+
+
+                Get.offAllNamed(PageRoutes.home_page);
+                //print(body);
               }
-          );
+              else{
+                var body=jsonDecode(response.body.toString());
+                print("FAILED TO REGISTER");
+                //print(body);
+                showErrorDialog(body["message"],true);
+                //print(body);
+              }
 
-          setState(() {
-            isRegistering=false;
-          });
+            }
+            catch(e){
+              print(e.toString());
+            }
 
-          if(response.statusCode==200){
-            var body=jsonDecode(response.body.toString());
-            print("SUCCESS");
-            //showErrorDialog("SUCCESSFULLY REGISTERED",false);
-             SharedPreferences pref =await SharedPreferences.getInstance();
-            // pref.setString("email", email);
-
-             String encodedMap = json.encode(body["user"]);
-            //print(encodedMap);
-
-             pref.setString('hasUser', encodedMap);
-
-
-            Get.offAllNamed(PageRoutes.home_page);
-            //print(body);
           }
           else{
-            var body=jsonDecode(response.body.toString());
-            print("FAILED TO REGISTER");
-            //print(body);
-            showErrorDialog(body["message"],true);
-            //print(body);
+            print("Incorrect mobile");
+            showErrorDialog("Enter valid mobile number",true);
           }
 
         }
-        catch(e){
-          print(e.toString());
+        else{
+          print("Incorrect email");
+          showErrorDialog("Enter valid email",true);
         }
+
+
 
 
       }
       else{
-        showErrorDialog("PASSWORD NOT SAME",true);
+        showErrorDialog("Password not same",true);
       }
 
 
     }
     else{
-      showErrorDialog("ENTER ALL DETAILS",true);
+      showErrorDialog("Enter all details",true);
 
     }
 

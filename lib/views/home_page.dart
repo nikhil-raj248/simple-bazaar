@@ -1,9 +1,11 @@
 import 'dart:convert';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:simple_bazaar/models/category.dart';
 import 'package:get/get.dart' hide Response;
 import '../models/dataFromGeoLocation.dart';
+import '../models/product.dart';
 import '../models/productByStoreId.dart';
 import '../models/store.dart';
 import '../routes/Routes.dart';
@@ -18,12 +20,13 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int idx = 0;
-  List<String> list = <String>[
+  List<Stores> list = <Stores>[
     // 'Mahalaxmi Store',
     // 'Aradhy Kirana Store',
     // 'Galaxy Traders',
     // 'Random Store',
-    // 'Your Store Name'
+     //'Your Store Name'
+    Stores(name: "Demo Store Name",uid: 2),
   ];
   String? dropdownValue;
   List<Category> categoriesData = [];
@@ -44,24 +47,8 @@ class _HomePageState extends State<HomePage> {
   DataFromGeoLocation? dataFromGeoLocation;
   ProductByStoreId? productByStoreId;
 
-  solve() async {
-    Response response = await post(
-        Uri.parse(
-            "https://simple.zapbase.com/public/api/v1/home/searchWithGeoLocation"),
-        body: {
-          "lat": "28.58564283",
-          "lng": "77.37528741",
-        });
-    if (response.statusCode == 200) {
-      var body = jsonDecode(response.body.toString());
-      print(body);
-      dataFromGeoLocation = DataFromGeoLocation.fromJson(body["data"]);
-      print(dataFromGeoLocation);
+  Stores? dropdownStore;
 
-    } else {
-      print("hello");
-    }
-  }
 
   Future<bool> getCategoriesApi() async {
     // final response =await http.get(Uri.parse("https://simple.zapbase.com/public/api/v1/category/getHome"));
@@ -76,6 +63,13 @@ class _HomePageState extends State<HomePage> {
     // print(categoriesData.length);
     // return categoriesData;
 
+    // Future.delayed(Duration(seconds: 2), () { // <-- Delay here
+    //
+    //
+    //
+    //
+    // });
+
     Response response = await post(
         Uri.parse(
             "https://simple.zapbase.com/public/api/v1/home/searchWithGeoLocation"),
@@ -89,14 +83,16 @@ class _HomePageState extends State<HomePage> {
       var body = jsonDecode(response.body.toString());
       dataFromGeoLocation = DataFromGeoLocation.fromJson(body["data"]);
       print(dataFromGeoLocation);
-      list.clear();
+      //list.clear();
       for(Stores i in dataFromGeoLocation!.stores!){
-        list.add(i.name!);
+        list.add(i);
       }
+      //list.clear();
       if(list.isNotEmpty){
         print("a");
-        dropdownValue=list[0];
-        await getCategoriesApi2(dataFromGeoLocation!.stores![0].uid,5);
+        //dropdownValue=dataFromGeoLocation!.stores![0].name;
+        dropdownStore=dataFromGeoLocation!.stores![0];
+         getCategoriesApi2(dataFromGeoLocation!.stores![0].uid,5);
         print("b");
         setState(() {
 
@@ -104,13 +100,19 @@ class _HomePageState extends State<HomePage> {
       }
       return true;
     }
+    else{
+      throw Exception('Failed to load');
+    }
     return false;
   }
 
 
 
   getCategoriesApi2(var storeId,var limit) async{
-    storeId=2;
+    setState(() {
+      isProductsLoading=true;
+    });
+    //storeId=2;
     print("c");
     Response response = await post(
         Uri.parse(
@@ -120,15 +122,24 @@ class _HomePageState extends State<HomePage> {
           "limit": limit.toString(),
         });
 
+    setState(() {
+      isProductsLoading=false;
+    });
+
     print("d");
     if(response.statusCode==200){
       print("1e");
       var body = jsonDecode(response.body.toString());
+      //print(body);
       print("2e");
       print(body["success"]);
-      productByStoreId = ProductByStoreId.fromJson(body["data"]);
+      productByStoreId = ProductByStoreId.fromJson(body);
+      setState(() {
+
+      });
       print("3e");
       print(productByStoreId);
+      print(productByStoreId!.data!.length);
       print("4e");
     }
     else{
@@ -232,9 +243,11 @@ class _HomePageState extends State<HomePage> {
                             border: Border.all(color: Colors.white),
                             color: Color.fromRGBO(214, 31, 38, 1),
                           ),
-                          child: Text("${4}",
+                          child: Text("4",
+                              textAlign: TextAlign.center,
                               style: TextStyle(
-                                  fontSize: 15, color: Colors.white))))
+                                  fontSize: 11, color: Colors.white))
+                      ))
                 ],
               ),
             ),
@@ -268,7 +281,11 @@ class _HomePageState extends State<HomePage> {
                 setState(() {
                   idx = 4;
                 });
-                Get.toNamed(PageRoutes.account_page);
+                Get.toNamed(PageRoutes.account_page)!.then((value){
+                  setState(() {
+                    idx=0;
+                  });
+                });
               },
               child: Padding(
                 padding: const EdgeInsets.only(top: 13.0),
@@ -296,7 +313,7 @@ class _HomePageState extends State<HomePage> {
         child: FutureBuilder(
           future: myFuture,
           builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
-            if (snapshot.hasData && snapshot.data == true) {
+            if (snapshot.hasData) {
               return SingleChildScrollView(
                 physics: BouncingScrollPhysics(),
                 child: Column(
@@ -305,9 +322,9 @@ class _HomePageState extends State<HomePage> {
                       height: 20,
                     ),
                     Container(
-                      margin: const EdgeInsets.only(left: 10.0, right: 10),
+                      margin: const EdgeInsets.only(left: 20.0, right: 10),
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: MainAxisAlignment.start,
                         //crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Row(
@@ -332,68 +349,66 @@ class _HomePageState extends State<HomePage> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Row(
-                                    children: [
-                                      //Text("Mahalaxmi Store",style: TextStyle(fontWeight: FontWeight.w500,fontSize: 18,color: Colors.black)),
-                                      // Icon(Icons.keyboard_arrow_down),
-                                      Container(
-                                        height: 30,
-                                        child: DropdownButtonHideUnderline(
-                                          child: DropdownButton<String>(
-                                            value: dropdownValue,
-                                            icon:
-                                                const Icon(Icons.keyboard_arrow_down),
-                                            elevation: 16,
-                                            //iconSize: 20,
-                                            style: const TextStyle(
-                                                fontWeight: FontWeight.w500,
-                                                fontSize: 18,
-                                                color: Colors.black),
+                                  if(list.length>0)Container(
+                                    height: 30,
+                                    child: DropdownButtonHideUnderline(
+                                      child: DropdownButton<Stores>(
+                                        value: dropdownStore,
+                                        icon:
+                                            const Icon(Icons.keyboard_arrow_down),
+                                        elevation: 16,
+                                        //iconSize: 20,
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.w500,
+                                            fontSize: 18,
+                                            color: Colors.black),
 
-                                            onChanged: (String? value) {
-                                              // This is called when the user selects an item.
-                                              setState(() {
-                                                dropdownValue = value!;
-                                              });
-                                            },
-                                            selectedItemBuilder:
-                                                (BuildContext context) {
-                                              //<-- SEE HERE
-                                              return list.map((String value) {
-                                                return Center(
-                                                  child: Container(
-                                                    //margin: EdgeInsets.only(top: 5),
-                                                    child: Text(
-                                                      dropdownValue!,
-                                                      style: const TextStyle(
-                                                          fontWeight: FontWeight.w500,
-                                                          fontSize: 18,
-                                                          color: Colors.black),
-                                                    ),
-                                                  ),
-                                                );
-                                              }).toList();
-                                            },
-                                            items: list.map<DropdownMenuItem<String>>(
-                                                (String value) {
-                                              return DropdownMenuItem<String>(
-                                                value: value,
+                                        onChanged: (Stores? value) {
+                                          // This is called when the user selects an item.
+                                          print("222222222222");
+                                          setState(() {
+                                            print("1111111111111");
+                                            dropdownStore = value!;
+                                            print(dropdownStore!.uid.toString()+"  "+dropdownStore!.name!);
+                                            getCategoriesApi2(dropdownStore!.uid,5);
+                                          });
+                                        },
+                                        selectedItemBuilder:
+                                            (BuildContext context) {
+                                          //<-- SEE HERE
+                                          return list.map((Stores value) {
+                                            return Center(
+                                              child: Container(
+                                                //margin: EdgeInsets.only(top: 5),
                                                 child: Text(
-                                                  value,
-                                                  style: TextStyle(
-                                                      fontWeight: FontWeight.w400,
-                                                      fontSize: 16,
-                                                      color: Color.fromRGBO(
-                                                          135, 135, 135, 1)),
+                                                  dropdownStore!.name!,
+                                                  style: const TextStyle(
+                                                      fontWeight: FontWeight.w500,
+                                                      fontSize: 18,
+                                                      color: Colors.black),
                                                 ),
-                                              );
-                                            }).toList(),
-                                          ),
-                                        ),
-                                      )
-                                    ],
+                                              ),
+                                            );
+                                          }).toList();
+                                        },
+                                        items: list.map((Stores value) {
+                                          return DropdownMenuItem<Stores>(
+                                            value: value,
+                                            child: Text(
+                                              value.name!,
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.w400,
+                                                  fontSize: 16,
+                                                  color: Color.fromRGBO(
+                                                      135, 135, 135, 1)),
+                                            ),
+                                          );
+                                        }).toList(),
+                                      ),
+                                    ),
                                   ),
                                   Text("Delivery In 15 mins",
+                                      textAlign: TextAlign.center,
                                       style: TextStyle(
                                           fontWeight: FontWeight.w400,
                                           fontSize: 12,
@@ -447,7 +462,7 @@ class _HomePageState extends State<HomePage> {
                           //Navigator.push(context, PageTransition(type: PageTransitionType.rightToLeft, child: ExplorePage()));
                           List<Category> categoriesData = [];
                           var temp = Get.toNamed(PageRoutes.explore_page,
-                              arguments: [categoriesData, "product"]);
+                              arguments: [categoriesData, "SearchProduct"]);
                           if (temp != null) {
                             FocusScope.of(context).requestFocus(FocusNode());
                           }
@@ -457,9 +472,15 @@ class _HomePageState extends State<HomePage> {
                           border: OutlineInputBorder(borderSide: BorderSide.none),
                           prefixIcon: Icon(
                             Icons.search,
+                             size: 22,
                             color: Color.fromRGBO(214, 31, 38, 1),
                           ),
                           hintText: "Search category",
+                          hintStyle: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                            color: Color.fromRGBO(151, 152, 153, 1),
+                          )
                         ),
                       ),
                     ),
@@ -470,6 +491,7 @@ class _HomePageState extends State<HomePage> {
                       height: height * 0.2,
                       child: ListView.builder(
                         scrollDirection: Axis.horizontal,
+                        physics: BouncingScrollPhysics(),
                         itemCount: 5,
                         itemBuilder: (context, index) {
                           return Container(
@@ -510,7 +532,7 @@ class _HomePageState extends State<HomePage> {
                           GestureDetector(
                             onTap: () {
                               Get.toNamed(PageRoutes.explore_page,
-                                  arguments: [dataFromGeoLocation!.category, "category"]);
+                                  arguments: [dataFromGeoLocation!.category, "SellAllCategory"]);
                             },
                             child: Text("See all",
                                 style: TextStyle(
@@ -525,12 +547,13 @@ class _HomePageState extends State<HomePage> {
                       height: 17,
                     ),
                     Container(
-                      height: width * 0.36,
+                      height: 145,
                       child: ListView.builder(
                         scrollDirection: Axis.horizontal,
+                        physics: BouncingScrollPhysics(),
                         itemCount: dataFromGeoLocation!.category!.length,
                         itemBuilder: (context, index) {
-                          return buildCategoriesItems(index, width);
+                          return buildCategoriesItems(index);
                         },
                       ),
                     ),
@@ -572,8 +595,8 @@ class _HomePageState extends State<HomePage> {
                     SizedBox(
                       height: 17,
                     ),
-                    Container(
-                      margin: EdgeInsets.only(left: 20, right: 20),
+                    !isProductsLoading?Container(
+                      margin: EdgeInsets.only(left: 18, right: 18),
                       child: GridView.builder(
                           //   scrollDirection: Axis.vertical,
                           shrinkWrap: true,
@@ -582,13 +605,16 @@ class _HomePageState extends State<HomePage> {
                           gridDelegate:
                               const SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 2,
-                            crossAxisSpacing: 10,
+                            crossAxisSpacing: 12,
+                            mainAxisSpacing: 6,
                           ),
-                          itemCount: productByStoreId!.data!.length,
+                          //itemCount: productByStoreId!.data!.length,
+                          itemCount: productByStoreId!=null?productByStoreId!.data!.length:0,
                           itemBuilder: (BuildContext context, int index) {
-                            return buildProductItems(index,width);
+                            return buildProductItems(index);
                           }),
-                    ),
+                    ):CircularProgressIndicator(color: Color.fromRGBO(214, 31, 38, 1),),
+                    SizedBox(height: 20,),
                   ],
                 ),
               );
@@ -603,99 +629,129 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  buildCategoriesItems(int idx, var width) {
+  buildCategoriesItems(int idx) {
     var temp = dataFromGeoLocation!.category;
-    return Column(
-      children: [
-        Container(
-          margin: EdgeInsets.only(left: 10, right: 10),
-          width: width * 0.2,
-          height: width * 0.18,
-          child: Image.network(
-              "https://simple.zapbase.com/public/storage/images/" +
-                  temp![idx].cover!),
-        ),
-        SizedBox(
-          height: 10,
-        ),
-        Container(
-          width: width * 0.18,
-          child: Text(
+    return Container(
+      margin: EdgeInsets.only(left: 10, right: 10),
+      width: 80,
+      child: Column(
+        children: [
+          Container(
+            // width: 80,
+             height: 80,
+            child: CachedNetworkImage(
+              key: UniqueKey(),
+              imageUrl: "https://simple.zapbase.com/public/storage/images/" + temp![idx].cover!,
+              placeholder: (context, url) => Center(child: CircularProgressIndicator(color: Color.fromRGBO(214, 31, 38, 1))),
+              errorWidget: (context, url, error) => Icon(Icons.error,color: Color.fromRGBO(214, 31, 38, 1),),
+            ),
+          ),
+          SizedBox(
+            height: 8,
+          ),
+          Text(
             temp![idx].name!,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
-          ),
-        )
-      ],
+          )
+        ],
+      ),
     );
   }
 
+  bool isProductsLoading=false;
 
-  buildProductItems(int idx, var width){
-    return GridTile(
+
+
+  buildProductItems(int idx){
+    return GestureDetector(
+      onTap: (){
+        Get.toNamed(PageRoutes.product_detail_page,arguments: [productByStoreId!.data![idx]]);
+      },
       child: Container(
-        // margin: (index % 2 == 0)
-        //     ? EdgeInsets.only(left: 20)
-        //     : EdgeInsets.only(right: 20),
-        child: Card(
-          color: Colors.transparent,
-          elevation: 0,
-          child: Container(
-            padding: EdgeInsets.only(left: 16, right: 11),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(17),
-              color: Color.fromRGBO(243, 245, 247, 1),
+        padding: EdgeInsets.only(left: 16, right: 10,top: 10,bottom: 5),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(17),
+          color: Color.fromRGBO(243, 245, 247, 1),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Expanded(
+              // child: Image.network(
+              //     "https://simple.zapbase.com/public/storage/images/" +
+              //         productByStoreId!.data![idx]!.cover!),
+              child: CachedNetworkImage(
+                key: UniqueKey(),
+                imageUrl: "https://simple.zapbase.com/public/storage/images/"+productByStoreId!.data![idx]!.cover!,
+                placeholder: (context, url) => Center(child: CircularProgressIndicator(color: Color.fromRGBO(214, 31, 38, 1))),
+                errorWidget: (context, url, error) => Icon(Icons.error,color: Color.fromRGBO(214, 31, 38, 1),),
+              ),
+              // height: 90,
+              // width: 80,
             ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+            SizedBox(
+              height: 10,
+            ),
+            Column(
+              crossAxisAlignment:
+              CrossAxisAlignment.start,
               children: [
-                SizedBox(
-                  child: Image.asset(
-                      "assets/images/category0.png"),
-                  height: width * 0.18,
-                  width: width * 0.18,
+                Text(
+                  productByStoreId!.data![idx]!.name!,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.start,
+                  style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 15),
                 ),
-                SizedBox(
-                  height: 25,
-                ),
-                Column(
-                  crossAxisAlignment:
-                  CrossAxisAlignment.start,
+                Row(
+                  mainAxisAlignment:
+                  MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      "Bell Pepper Red",
-                      style: TextStyle(
+                    Text("${getQuantity(productByStoreId!.data![idx])}, \u{20B9}${productByStoreId!.data![idx]!.originalPrice!}",
+                        style: TextStyle(
                           fontWeight: FontWeight.w700,
-                          fontSize: 15),
-                    ),
-                    Row(
-                      mainAxisAlignment:
-                      MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text("1kg, 4\$",
-                            style: TextStyle(
-                              fontWeight: FontWeight.w700,
-                              fontSize: 16,
-                              color: Color.fromRGBO(
-                                  214, 31, 38, 1),
-                            )),
-                        Icon(
-                          Icons.add_circle_rounded,
-                          color:
-                          Color.fromRGBO(214, 31, 38, 1),
-                        )
-                      ],
+                          fontSize: 16,
+                          color: Color.fromRGBO(
+                              214, 31, 38, 1),
+                        )),
+                    Icon(
+                      Icons.add_circle_rounded,
+                      color:
+                      Color.fromRGBO(214, 31, 38, 1),
                     )
                   ],
                 )
               ],
-            ),
-          ),
+            )
+          ],
         ),
       ),
     );
   }
+
+  String getQuantity(ProductDetails productDetails){
+    if(productDetails.haveGram!=0){
+      return productDetails.gram!+"g";
+    }
+    else if(productDetails.haveKg!=0){
+      return productDetails.kg!+"Kg";
+    }
+    else if(productDetails.haveLiter!=0){
+      return productDetails.liter!+"L";
+    }
+    else if(productDetails.haveMl!=0){
+      return productDetails.ml!+"ml";
+    }
+    else if(productDetails.havePcs!=0){
+      return productDetails.pcs!+"pcs";
+    }
+    return "";
+  }
+
 
 }
