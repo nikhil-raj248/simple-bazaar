@@ -120,7 +120,8 @@ class _HomePageState extends State<HomePage> {
         body: {
           "id": storeId.toString(),
           "limit": limit.toString(),
-        });
+        }
+        );
 
     setState(() {
       isProductsLoading=false;
@@ -532,7 +533,7 @@ class _HomePageState extends State<HomePage> {
                           GestureDetector(
                             onTap: () {
                               Get.toNamed(PageRoutes.explore_page,
-                                  arguments: [dataFromGeoLocation!.category, "SellAllCategory"]);
+                                  arguments: [dataFromGeoLocation!.category, "SeeAllCategory"]);
                             },
                             child: Text("See all",
                                 style: TextStyle(
@@ -631,32 +632,38 @@ class _HomePageState extends State<HomePage> {
 
   buildCategoriesItems(int idx) {
     var temp = dataFromGeoLocation!.category;
-    return Container(
-      margin: EdgeInsets.only(left: 10, right: 10),
-      width: 80,
-      child: Column(
-        children: [
-          Container(
-            // width: 80,
-             height: 80,
-            child: CachedNetworkImage(
-              key: UniqueKey(),
-              imageUrl: "https://simple.zapbase.com/public/storage/images/" + temp![idx].cover!,
-              placeholder: (context, url) => Center(child: CircularProgressIndicator(color: Color.fromRGBO(214, 31, 38, 1))),
-              errorWidget: (context, url, error) => Icon(Icons.error,color: Color.fromRGBO(214, 31, 38, 1),),
+    return GestureDetector(
+      onTap: (){
+        Get.toNamed(PageRoutes.explore_page,
+            arguments: [[], "SellStoreCategory",temp[idx].id,dropdownStore!.uid]);
+      },
+      child: Container(
+        margin: EdgeInsets.only(left: 10, right: 10),
+        width: 80,
+        child: Column(
+          children: [
+            Container(
+              // width: 80,
+               height: 80,
+              child: CachedNetworkImage(
+                key: UniqueKey(),
+                imageUrl: "https://simple.zapbase.com/public/storage/images/" + temp![idx].cover!,
+                placeholder: (context, url) => Center(child: CircularProgressIndicator(color: Color.fromRGBO(214, 31, 38, 1))),
+                errorWidget: (context, url, error) => Icon(Icons.error,color: Color.fromRGBO(214, 31, 38, 1),),
+              ),
             ),
-          ),
-          SizedBox(
-            height: 8,
-          ),
-          Text(
-            temp![idx].name!,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
-          )
-        ],
+            SizedBox(
+              height: 8,
+            ),
+            Text(
+              temp![idx].name!,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+            )
+          ],
+        ),
       ),
     );
   }

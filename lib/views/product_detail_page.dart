@@ -98,13 +98,14 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       CarouselSlider(
                         items: imageList
                             .map(
-                                (item){return Expanded(
-                                  child: CachedNetworkImage(
-                                    key: UniqueKey(),
-                                    imageUrl: item["image_path"],
-                                    placeholder: (context, url) => Center(child: CircularProgressIndicator(color: Color.fromRGBO(214, 31, 38, 1))),
-                                    errorWidget: (context, url, error) => Icon(Icons.error,color: Color.fromRGBO(214, 31, 38, 1),),
-                                  ),
+                                (item){return CachedNetworkImage(
+                                  height: 180,
+                                  width: width*0.4,
+                                  fit: BoxFit.cover,
+                                  key: UniqueKey(),
+                                  imageUrl: item["image_path"],
+                                  placeholder: (context, url) => Center(child: CircularProgressIndicator(color: Color.fromRGBO(214, 31, 38, 1))),
+                                  errorWidget: (context, url, error) => Icon(Icons.error,color: Color.fromRGBO(214, 31, 38, 1),),
                                 );
                                 }
                         )

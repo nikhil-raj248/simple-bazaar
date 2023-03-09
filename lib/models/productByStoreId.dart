@@ -19,10 +19,13 @@ class ProductByStoreId {
         data!.add(new ProductDetails.fromJson(v));
       });
     }
+    print("0000001");
     storeInfo = json['storeInfo'] != null
         ? new StoreInfo.fromJson(json['storeInfo'])
         : null;
+    print("0000002");
     success = json['success'];
+    print("0000003");
     status = json['status'];
   }
 

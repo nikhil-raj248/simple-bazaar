@@ -1,11 +1,16 @@
+import 'dart:convert';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:simple_bazaar/models/subCategory.dart';
 import 'package:simple_bazaar/search_page.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Response;
 import '../../routes/Routes.dart';
 import '../models/category.dart';
+import 'package:http/http.dart';
+
+import '../models/productByStoreId.dart';
 
 class ExplorePage extends StatefulWidget {
   const ExplorePage({Key? key}) : super(key: key);
@@ -30,19 +35,71 @@ class _ExplorePageState extends State<ExplorePage> {
 
   List<SubCategory> subCategoriesData=[];
   String pageType="";
+  late final Future myFuture;
+  ProductByStoreId? productByStoreId;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     //List<SubCategory> subCategoriesData=[];
-    List<Category> categoriesData = Get.arguments[0];
     pageType = Get.arguments[1];
-    //print(categoriesData.length);
-    for(final e in categoriesData!){
+    if(pageType=="SellStoreCategory"){
+      myFuture=getProductOfStore(Get.arguments[2],Get.arguments[3]);
+    }
+    else{
+      List<Category> categoriesData = Get.arguments[0];
+      //print(categoriesData.length);
+      for(final e in categoriesData!){
         subCategoriesData.addAll(e.subCates as Iterable<SubCategory>);
+      }
+      myFuture=Future<bool>.value(true);
+    }
+
+  }
+  Future<bool> getProductOfStore(var categoryId,var storeId) async{
+    var limit=5;
+    print(categoryId.toString());
+    print(storeId.toString());
+    Response response = await post(
+        Uri.parse(
+            "https://simple.zapbase.com/public/api/v1/products/getWithSubCategoryId"),
+        body: {
+          "id": categoryId.toString(),
+          "limit": limit.toString(),
+          "storeIds": storeId.toString(),
+        }
+    );
+
+    if(response.statusCode==200){
+      print("1e");
+      var body = jsonDecode(response.body.toString());
+      //print(body);
+      print("2e");
+      print(body["success"]);
+      print(body["data"]);
+      print(body["data"].runtimeType);
+      productByStoreId = ProductByStoreId.fromJson(body);
+      print("3e");
+      for(int i=0;i<productByStoreId!.data!.length;i++){
+        print("33e");
+        subCategoriesData.add(SubCategory(name: productByStoreId!.data![i].name,cover: productByStoreId!.data![i].cover));
+      }
+      print("4e");
+
+      setState(() {
+
+      });
+      print("5e");
+      return true;
+    }
+    else{
+      print("not successful");
+      throw Exception('Failed to load');
     }
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -164,83 +221,91 @@ class _ExplorePageState extends State<ExplorePage> {
           },
         ),
         title:  Text(
-          (pageType=="SellAllCategory")?"Find Category":"Find Products",
+          (pageType=="SeeAllCategory")?"Find Category":"Find Products",
           style: TextStyle(color: Colors.black, fontSize: 18,fontWeight: FontWeight.w700),
         ),
         backgroundColor: Colors.white,
         elevation: 0,),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.only(left: 20.0,right: 20),
-          child: SingleChildScrollView(
-            physics: BouncingScrollPhysics(),
-            child: Column(
-              children: [
-                SizedBox(height: 20,),
-                TextField(
-                  //autofocus: true,
-                  decoration: InputDecoration(
-                    filled: true, //<-- SEE HERE
-                    fillColor: Color.fromRGBO(242, 243, 242, 1),
-                    border: OutlineInputBorder(
-                        borderSide: BorderSide.none,
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    prefixIcon: Icon(
-                      Icons.search,
-                      color: Colors.red,
-                    ),
-                    hintText: (pageType=="category")?"Search Category":"Search Product",
+        child: FutureBuilder(
+          future: myFuture,
+          builder: (context,snapshot){
+            if(snapshot.hasData){
+              return Padding(
+                padding: const EdgeInsets.only(left: 20.0,right: 20),
+                child: SingleChildScrollView(
+                  physics: BouncingScrollPhysics(),
+                  child: Column(
+                    children: [
+                      SizedBox(height: 20,),
+                      TextField(
+                        //autofocus: true,
+                        decoration: InputDecoration(
+                          filled: true, //<-- SEE HERE
+                          fillColor: Color.fromRGBO(242, 243, 242, 1),
+                          border: OutlineInputBorder(
+                            borderSide: BorderSide.none,
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          prefixIcon: Icon(
+                            Icons.search,
+                            color: Colors.red,
+                          ),
+                          hintText: (pageType=="SeeAllCategory")?"Search Category":"Search Product",
+                        ),
+                      ),
+                      SizedBox(height: 35,),
+                      GridView.builder(
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          //physics: BouncingScrollPhysics(),
+                          gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 3,
+                              crossAxisSpacing: 10,
+                              mainAxisSpacing: 10
+                          ),
+                          itemCount: subCategoriesData.length,
+                          itemBuilder: (BuildContext context, int index) {
+                            return Container(
+                              padding: EdgeInsets.only(left: 5,right: 5,top: 5,bottom: 5),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(17),
+                                border: Border.all(color:itemColors[index%7]["b"]),
+                                color: itemColors[index%7]["a"],
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Flexible(
+                                    child: CachedNetworkImage(
+                                      key: UniqueKey(),
+                                      imageUrl: "https://simple.zapbase.com/public/storage/images/"+subCategoriesData[index].cover!,
+                                      placeholder: (context, url) => Center(child: CircularProgressIndicator(color: Color.fromRGBO(214, 31, 38, 1))),
+                                      errorWidget: (context, url, error) => Icon(Icons.error,color: Color.fromRGBO(214, 31, 38, 1),),
+                                    ),
+                                    //height: 50,
+                                    //width: 50,
+
+                                  ),
+                                  SizedBox(height: 8,),
+                                  Text(subCategoriesData[index].name!,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(fontSize: 12,fontWeight: FontWeight.w700),),
+                                ],
+                              ),
+                            );
+                          }),
+
+                    ],
                   ),
                 ),
-                SizedBox(height: 35,),
-                GridView.builder(
-                    shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    //physics: BouncingScrollPhysics(),
-                    gridDelegate:
-                    const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 3,
-                      crossAxisSpacing: 10,
-                      mainAxisSpacing: 10
-                    ),
-                    itemCount: subCategoriesData.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      return Container(
-                        padding: EdgeInsets.only(left: 5,right: 5,top: 3,bottom: 3),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(17),
-                          border: Border.all(color:itemColors[index%7]["b"]),
-                          color: itemColors[index%7]["a"],
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Flexible(
-                              child: CachedNetworkImage(
-                                key: UniqueKey(),
-                                imageUrl: "https://simple.zapbase.com/public/storage/images/"+subCategoriesData[index].cover!,
-                                placeholder: (context, url) => Center(child: CircularProgressIndicator(color: Color.fromRGBO(214, 31, 38, 1))),
-                                errorWidget: (context, url, error) => Icon(Icons.error,color: Color.fromRGBO(214, 31, 38, 1),),
-                              ),
-                              //height: 50,
-                              //width: 50,
-
-                            ),
-                            SizedBox(height: 8,),
-                            Text(subCategoriesData[index].name!,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              textAlign: TextAlign.center,
-                              style: TextStyle(fontSize: 12,fontWeight: FontWeight.w700),),
-                          ],
-                        ),
-                      );
-                    }),
-
-              ],
-            ),
-          ),
+              );
+            }
+            return Center(child: CircularProgressIndicator(color: Color.fromRGBO(214, 31, 38, 1),));
+          },
         )
       ),
 
